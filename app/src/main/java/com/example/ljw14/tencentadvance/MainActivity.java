@@ -25,7 +25,7 @@ import relation.RelationFragment;
 /*
 *
 * Test push to Github
-* 刘剑文加的一行注释
+* Add
 * */
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{

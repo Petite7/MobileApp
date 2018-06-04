@@ -1,17 +1,21 @@
 package relation;
 
-
+import sidebar.*;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.ljw14.tencentadvance.AddActivity;
@@ -19,6 +23,7 @@ import com.example.ljw14.tencentadvance.InfoMe;
 import com.example.ljw14.tencentadvance.R;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -27,8 +32,18 @@ import java.util.List;
  */
 public class RelationFragment extends Fragment implements View.OnClickListener{
 
-    private List<People> peopleList = new ArrayList<>();
+    private RecyclerView mRecyclerView;
+    private SideBar sideBar;
+    private TextView dialog;
+    private SortAdapter adapter;
+    private ClearEditText mClearEditText;
+    LinearLayoutManager manager;
 
+    private List<SortModel> SourceDateList;
+    /**
+     * 根据拼音来排列RecyclerView里面的数据类
+     */
+    private PinyinComparator pinyinComparator;
     /**
      * Called to have the fragment instantiate its user interface view.
      * This is optional, and non-graphical fragments can return null (which
@@ -70,21 +85,6 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-
-        /**
-         * 这一段代码用来初始化RecycleView的显示信息
-         * 主要修改第一行的 initInformation() 函数
-         */
-        initPeopleList();
-        //Log.d("RelationFragment", "ok");
-        RecyclerView recyclerView = (RecyclerView) getActivity().findViewById(R.id.relationRecyclerView);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
-        recyclerView.setLayoutManager(layoutManager);
-        PeopleAdapter adapter = new PeopleAdapter(peopleList);
-        recyclerView.setAdapter(adapter);
-
-
         /**
          * 绑定按钮点击事件，事件分别定义在下面的 Onclick 函数中
          */
@@ -95,8 +95,76 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
         buttonMe.setOnClickListener(this);
         buttonEdit.setOnClickListener(this);
 
-    }
 
+        initViews();
+
+    }
+    private void initViews() {
+        pinyinComparator = new PinyinComparator();
+
+        sideBar = (SideBar) getActivity().findViewById(R.id.relationSideBar);
+        dialog = (TextView) getActivity().findViewById(R.id.relationDialog);
+        sideBar.setTextView(dialog);
+
+        //设置右侧SideBar触摸监听
+        sideBar.setOnTouchingLetterChangedListener(new SideBar.OnTouchingLetterChangedListener() {
+
+            @Override
+            public void onTouchingLetterChanged(String s) {
+                //该字母首次出现的位置
+                int position = adapter.getPositionForSection(s.charAt(0));
+                if (position != -1) {
+                    manager.scrollToPositionWithOffset(position, 0);
+                }
+
+            }
+        });
+
+        mRecyclerView = (RecyclerView) getActivity().findViewById(R.id.relationRecyclerView);
+        ArrayList list = new ArrayList();
+        list.add("a");
+        list.add("b");
+        list.add("c");
+        list.add("李志");
+        String[] arrString = (String[])list.toArray(new String[list.size()]) ;
+        SourceDateList = filledData(arrString);
+
+        // 根据a-z进行排序源数据
+        Collections.sort(SourceDateList, pinyinComparator);
+        //RecyclerView社置manager
+        manager = new LinearLayoutManager(getContext());
+        manager.setOrientation(LinearLayoutManager.VERTICAL);
+        mRecyclerView.setLayoutManager(manager);
+        adapter = new SortAdapter(getContext(), SourceDateList);
+        mRecyclerView.setAdapter(adapter);
+        //item点击事件
+        /*adapter.setOnItemClickListener(new SortAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                Toast.makeText(MainActivity.this, ((SortModel)adapter.getItem(position)).getName(),Toast.LENGTH_SHORT).show();
+            }
+        });*/
+        mClearEditText = (ClearEditText) getActivity().findViewById(R.id.relationClearEditText);
+
+        //根据输入框输入值的改变来过滤搜索
+        mClearEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                //当输入框里面的值为空，更新为原来的列表，否则为过滤数据列表
+                filterData(s.toString());
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count,
+                                          int after) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+    }
     /**
      * 按钮点击事件
      */
@@ -121,23 +189,63 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
 
         }
     }
+    /**
+     * 为RecyclerView填充数据
+     *
+     * @param date
+     * @return
+     */
+    private List<SortModel> filledData(String[] date) {
+        List<SortModel> mSortList = new ArrayList<>();
 
+        for (int i = 0; i < date.length; i++) {
+            SortModel sortModel = new SortModel();
+            sortModel.setName(date[i]);
+            //汉字转换成拼音
+            String pinyin = PinyinUtils.getPingYin(date[i]);
+            String sortString = pinyin.substring(0, 1).toUpperCase();
+
+            // 正则表达式，判断首字母是否是英文字母
+            if (sortString.matches("[A-Z]")) {
+                sortModel.setLetters(sortString.toUpperCase());
+            } else {
+                sortModel.setLetters("#");
+            }
+
+            mSortList.add(sortModel);
+        }
+        return mSortList;
+
+    }
 
     /**
-     * initInformation() 函数
-     * 用来初始化 RecycleView 显示的数据
-     * 这里需要从数据库中得到
+     * 根据输入框中的值来过滤数据并更新RecyclerView
+     *
+     * @param filterStr
      */
-    private void initPeopleList(){
-        for(int i = 0; i < 4; i ++){
-            People people1 = new People("小张", "18858588858");
-            peopleList.add(people1);
-            People people2 = new People("小王", "18851234458");
-            peopleList.add(people2);
-            People people3 = new People("小黄", "18854328858");
-            peopleList.add(people3);
-            People people4 = new People("小红", "18858585435");
-            peopleList.add(people4);
+    private void filterData(String filterStr) {
+        List<SortModel> filterDateList = new ArrayList<>();
+
+        if (TextUtils.isEmpty(filterStr)) {
+            filterDateList = SourceDateList;
+        } else {
+            filterDateList.clear();
+            for (SortModel sortModel : SourceDateList) {
+                String name = sortModel.getName();
+                if (name.indexOf(filterStr.toString()) != -1 ||
+                        PinyinUtils.getFirstSpell(name).startsWith(filterStr.toString())
+                        //不区分大小写
+                        || PinyinUtils.getFirstSpell(name).toLowerCase().startsWith(filterStr.toString())
+                        || PinyinUtils.getFirstSpell(name).toUpperCase().startsWith(filterStr.toString())
+                        ) {
+                    filterDateList.add(sortModel);
+                }
+            }
         }
+
+        // 根据a-z进行排序
+        Collections.sort(filterDateList, pinyinComparator);
+        adapter.updateList(filterDateList);
     }
+
 }

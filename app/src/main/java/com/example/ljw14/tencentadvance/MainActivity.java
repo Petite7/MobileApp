@@ -28,11 +28,6 @@ import relation.RelationFragment;
 *
 * */
 
-/*
-*
-*
-* */
-
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
     @Override

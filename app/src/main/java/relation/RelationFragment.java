@@ -1,7 +1,12 @@
 package relation;
 
 import sidebar.*;
+import sqlHelper.MySQLiteOpenHelper;
+
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -10,7 +15,6 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,9 +41,13 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
     private TextView dialog;
     private SortAdapter adapter;
     private ClearEditText mClearEditText;
-    LinearLayoutManager manager;
+    private LinearLayoutManager manager;
 
-    private List<SortModel> SourceDateList;
+    private List<SortModel> SourceDateList = new ArrayList<>();
+
+    private MySQLiteOpenHelper dbHelper = null;
+
+
     /**
      * 根据拼音来排列RecyclerView里面的数据类
      */
@@ -96,9 +104,49 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
         buttonEdit.setOnClickListener(this);
 
 
+        dbHelper = new MySQLiteOpenHelper(getContext());
+        tempInsertDates();
+
+
         initViews();
 
     }
+
+    private void tempInsertDates(){
+        ContentValues values=new ContentValues();
+
+        for(int i=0; i<5; i++) {
+            values.clear();
+            values.put("username", "汪昱行");
+            values.put("phonenumber", "18292026841");
+            dbInsertData(values, "tb_mycontacts");
+
+            values.clear();
+            values.put("username", "陈衍琛");
+            values.put("phonenumber", "123456789");
+            dbInsertData(values, "tb_mycontacts");
+
+            values.clear();
+            values.put("username", "谢泽帆");
+            values.put("phonenumber", "123456789");
+            dbInsertData(values, "tb_mycontacts");
+
+            values.clear();
+            values.put("username", "陈宁");
+            values.put("phonenumber", "123456789");
+            dbInsertData(values, "tb_mycontacts");
+
+            values.clear();
+            values.put("username", "rng");
+            values.put("phonenumber", "123456789");
+            dbInsertData(values, "tb_mycontacts");
+        }
+    }
+
+    private void dbInsertData(ContentValues values, String tableName){
+        dbHelper.getWritableDatabase().insert(tableName,null,values);
+    }
+
     private void initViews() {
         pinyinComparator = new PinyinComparator();
 
@@ -121,14 +169,8 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
         });
 
         mRecyclerView = (RecyclerView) getActivity().findViewById(R.id.relationRecyclerView);
-        ArrayList list = new ArrayList();
-        list.add("a");
-        list.add("b");
-        list.add("c");
-        list.add("李志");
-        String[] arrString = (String[])list.toArray(new String[list.size()]) ;
-        SourceDateList = filledData(arrString);
-
+        initRelation();
+        
         // 根据a-z进行排序源数据
         Collections.sort(SourceDateList, pinyinComparator);
         //RecyclerView社置manager
@@ -137,6 +179,7 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
         mRecyclerView.setLayoutManager(manager);
         adapter = new SortAdapter(getContext(), SourceDateList);
         mRecyclerView.setAdapter(adapter);
+
         //item点击事件
         /*adapter.setOnItemClickListener(new SortAdapter.OnItemClickListener() {
             @Override
@@ -144,6 +187,8 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
                 Toast.makeText(MainActivity.this, ((SortModel)adapter.getItem(position)).getName(),Toast.LENGTH_SHORT).show();
             }
         });*/
+
+
         mClearEditText = (ClearEditText) getActivity().findViewById(R.id.relationClearEditText);
 
         //根据输入框输入值的改变来过滤搜索
@@ -157,14 +202,32 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count,
                                           int after) {
-
             }
-
             @Override
             public void afterTextChanged(Editable s) {
             }
         });
     }
+
+    /**
+     * 用于初始化显示的数据
+     */
+    private void initRelation()
+    {
+        String[] columns = new String[] {"username", "phonenumber"};
+        Cursor cursor = dbHelper.getWritableDatabase().query("tb_mycontacts",columns,null,null,
+                null,null,null,null);
+        if(cursor.moveToFirst()){
+            do{
+                SortModel sortModel = new SortModel();
+                sortModel.setName(cursor.getString(cursor.getColumnIndex("username")));
+                sortModel.setTelephone(cursor.getString(cursor.getColumnIndex("phonenumber")));
+                SourceDateList.add(sortModel);
+            }while (cursor.moveToNext());
+        }
+        cursor.close();
+    }
+
     /**
      * 按钮点击事件
      */
@@ -195,14 +258,11 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
      * @param date
      * @return
      */
-    private List<SortModel> filledData(String[] date) {
-        List<SortModel> mSortList = new ArrayList<>();
-
+    private void filledData(SortModel[] date) {
         for (int i = 0; i < date.length; i++) {
-            SortModel sortModel = new SortModel();
-            sortModel.setName(date[i]);
+            SortModel sortModel = date[i];
             //汉字转换成拼音
-            String pinyin = PinyinUtils.getPingYin(date[i]);
+            String pinyin = PinyinUtils.getPingYin(sortModel.getName());
             String sortString = pinyin.substring(0, 1).toUpperCase();
 
             // 正则表达式，判断首字母是否是英文字母
@@ -211,11 +271,7 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
             } else {
                 sortModel.setLetters("#");
             }
-
-            mSortList.add(sortModel);
         }
-        return mSortList;
-
     }
 
     /**

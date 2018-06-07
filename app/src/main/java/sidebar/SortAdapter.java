@@ -32,8 +32,9 @@ public class SortAdapter extends RecyclerView.Adapter<SortAdapter.ViewHolder> {
     public SortAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.people_item, parent,false);
         ViewHolder viewHolder = new ViewHolder(view);
-        viewHolder.tvTag = (TextView) view.findViewById(R.id.peopleName);
-        viewHolder.tvName = (TextView) view.findViewById(R.id.peopleTelephone);
+        viewHolder.peopleName = (TextView) view.findViewById(R.id.peopleName);
+        viewHolder.peopleTel = (TextView) view.findViewById(R.id.peopleTelephone);
+        viewHolder.peopleLocation = (TextView) view.findViewById(R.id.peopleLocation);
         return viewHolder;
     }
 
@@ -42,11 +43,18 @@ public class SortAdapter extends RecyclerView.Adapter<SortAdapter.ViewHolder> {
         int section = getSectionForPosition(position);
         //如果当前位置等于该分类首字母的Char的位置 ，则认为是第一次出现
         if (position == getPositionForSection(section)) {
-            holder.tvTag.setVisibility(View.VISIBLE);
-            holder.tvTag.setText(mData.get(position).getLetters());
+            //holder.peopleName.setText(mData.get(position).getLetters());
+            holder.peopleChar.setTextSize(20);
         } else {
-            holder.tvTag.setVisibility(View.GONE);
+            holder.peopleChar.setTextSize(0);
         }
+
+        SortModel sortModel = this.mData.get(position);
+        holder.peopleChar.setText(sortModel.getLetters());
+        holder.peopleName.setText(sortModel.getName());
+        holder.peopleTel.setText(sortModel.getTelephone());
+        holder.peopleLocation.setText(sortModel.getLocation());
+
 
         if (mOnItemClickListener != null) {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -55,12 +63,8 @@ public class SortAdapter extends RecyclerView.Adapter<SortAdapter.ViewHolder> {
                     mOnItemClickListener.onItemClick(holder.itemView, position);
                 }
             });
-
         }
-
-        holder.tvName.setText(this.mData.get(position).getName());
-
-        holder.tvName.setOnClickListener(new View.OnClickListener() {
+        holder.peopleTel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Toast.makeText(mContext, mData.get(position).getName(),Toast.LENGTH_SHORT).show();
@@ -87,10 +91,14 @@ public class SortAdapter extends RecyclerView.Adapter<SortAdapter.ViewHolder> {
     //**************************************************************
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTag, tvName;
+        TextView peopleName, peopleTel, peopleLocation, peopleChar;
 
         public ViewHolder(View itemView) {
             super(itemView);
+            peopleName = (TextView) itemView.findViewById(R.id.peopleName);
+            peopleTel = (TextView) itemView.findViewById(R.id.peopleTelephone);
+            peopleLocation = (TextView) itemView.findViewById(R.id.peopleLocation);
+            peopleChar = (TextView) itemView.findViewById(R.id.peopleChar);
         }
     }
 

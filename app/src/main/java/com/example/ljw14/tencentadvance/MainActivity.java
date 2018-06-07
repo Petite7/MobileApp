@@ -21,6 +21,7 @@ import callrecord.CallRecordFragment;
 import relation.People;
 import relation.PeopleAdapter;
 import relation.RelationFragment;
+import remind.RemindFragment;
 
 /*
 *
@@ -53,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
          * 绑定点击事件，事件分别定义在下面的 Onclick 函数中
          */
         Button mainButtonRelation = (Button) findViewById(R.id.mainButtonRelation);
-        Button mainButtonDial = (Button) findViewById(R.id.mainButtonDial);
+        Button mainButtonDial = (Button) findViewById(R.id.mainButtonRemind);
         Button mainButtonCallRecord = (Button) findViewById(R.id.mainButtonCallRecord);
         mainButtonRelation.setOnClickListener(this);
         mainButtonDial.setOnClickListener(this);
@@ -82,11 +83,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.mainButtonCallRecord:
                 replaceFragment(new CallRecordFragment());
                 break;
-            case R.id.mainButtonDial:
-                Intent intent = new Intent(Intent.ACTION_DIAL);
-                intent.setData(Uri.parse("tel:"));//表示不输入号码
-                //intent.setData(Uri.parse("tel:10086"));//表示输入号码：10086
-                startActivity(intent);
+            case R.id.mainButtonRemind:
+                replaceFragment(new RemindFragment());
+                break;
             default:
                 break;
         }

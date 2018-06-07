@@ -35,18 +35,19 @@
             android:text="联系人" />
 
         <Button
-            android:id="@+id/mainButtonDial"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="拨号" />
-
-        <Button
             android:id="@+id/mainButtonCallRecord"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="通话记录" />
+
+        <Button
+            android:id="@+id/mainButtonRemind"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="提醒事项" />
+
 
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

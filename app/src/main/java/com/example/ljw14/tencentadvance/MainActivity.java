@@ -76,6 +76,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         /**
+         * 从assets里初始化归属地信息
+         * */
+        placeInitiate();
+
+        /**
          * 这一段代码用来影藏android自带的Title
          */
         ActionBar actionBar = getSupportActionBar();

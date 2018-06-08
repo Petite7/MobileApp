@@ -16,12 +16,14 @@ public class RemindAdapter extends RecyclerView.Adapter<RemindAdapter.ViewHolder
     private List<Remind> mRemindList;
 
     static class ViewHolder extends RecyclerView.ViewHolder{
+        View remindView;
         TextView remindTime;
         TextView remindEvent;
         TextView remindFinished;
 
         public ViewHolder(View view){
             super(view);
+            remindView = view;
             remindTime = (TextView) view.findViewById(R.id.remindTime);
             remindEvent = (TextView) view.findViewById(R.id.remindEvent);
             remindFinished = (TextView) view.findViewById(R.id.remindFinished);
@@ -54,8 +56,22 @@ public class RemindAdapter extends RecyclerView.Adapter<RemindAdapter.ViewHolder
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.remind_item, parent, false);
-        ViewHolder holder = new ViewHolder(view);
+        View view = LayoutInflater.from(parent.getContext()).
+                inflate(R.layout.remind_item, parent, false);
+        final ViewHolder holder = new ViewHolder(view);
+        holder.remindView.setOnClickListener(new View.OnClickListener(){
+            /**
+             * Called when a view has been clicked.
+             *
+             * @param v The view that was clicked.
+             */
+            @Override
+            public void onClick(View v) {
+                int position = holder.getAdapterPosition();
+                Remind remind = mRemindList.get(position);
+
+            }
+        });
         return holder;
     }
 

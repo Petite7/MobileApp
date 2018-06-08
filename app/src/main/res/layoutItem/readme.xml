@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <Button
+        android:id="@+id/add_data"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add data"/>
+
+    <EditText
+        android:id="@+id/editText_select_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="输入姓名"/>
+
+    <Button
+        android:id="@+id/select_data"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="查询"
+        android:textAllCaps="false"/>
+
+    <EditText
+        android:id="@+id/editText_delete_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="输入姓名"/>
+
+    <Button
+        android:id="@+id/delete_data"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="删除" />
+
+    <EditText
+        android:id="@+id/editText_update_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="输入需要修改联系人的姓名"/>
+
+    <EditText
+        android:id="@+id/editText_new_phonenumber"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="新的电话号码" />
+    <Button
+        android:id="@+id/update"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="确认更新"/>
+
+</LinearLayout>

@@ -12,6 +12,9 @@ public class Remind {
         this.remindEvent = remindEvent;
         this.finished = finished;
     }
+    public Remind(){
+        
+    };
 
     public void setRemindEvent(String remindEvent) {
         this.remindEvent = remindEvent;

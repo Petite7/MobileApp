@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/create_user_dialog_view"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="#FFF"
+    android:minWidth="200dp"
+    android:orientation="vertical"
+    android:padding="10dp"
+    android:paddingBottom="30dp"
+    android:paddingTop="30dp">
+
+    <EditText
+        android:id="@+id/addRemindEvent"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/buttonstyle"
+        android:hint="事件"
+        android:minHeight="45dp"
+        android:textSize="18sp" />
+
+    <EditText
+        android:id="@+id/addRemindTime"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/buttonstyle"
+        android:hint="时间"
+        android:minHeight="45dp"
+        android:textSize="18sp" />
+
+    <EditText
+        android:id="@+id/addRemindAdditionInfo"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/buttonstyle"
+        android:hint="备注"
+        android:minHeight="45dp"
+        android:textSize="18sp" />
+
+    <Button
+        android:id="@+id/addRemindButtonOk"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textSize="20dp"
+        android:text="添加"
+        android:background="@drawable/buttonstyle" />
+
+</LinearLayout>

@@ -25,7 +25,9 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         // 创建表结构
-        db.execSQL("create table if not exists tb_mycontacts(_id integer primary key autoincrement , username , phonenumber)");
+        db.execSQL("create table if not exists tb_mycontacts(_id integer primary key autoincrement ," +
+                " username , phonenumber)");
+        db.execSQL("create table if not exists tb_notes(_id integer primary key autoincrement ,date,text)");
     }
     // 更新数据库及其中的 表结构的
     @Override

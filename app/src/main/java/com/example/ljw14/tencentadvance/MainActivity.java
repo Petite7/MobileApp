@@ -17,6 +17,7 @@ import android.widget.Button;
 import java.util.ArrayList;
 import java.util.List;
 
+import addpeople.AddDialog;
 import callrecord.CallRecordFragment;
 import relation.People;
 import relation.PeopleAdapter;

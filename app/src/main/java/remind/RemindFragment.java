@@ -1,19 +1,29 @@
 package remind;
 
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.example.ljw14.tencentadvance.R;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import addpeople.AddDialog;
+import sqlHelper.MySQLiteOpenHelper;
+
+import static android.content.ContentValues.TAG;
 
 
 /**
@@ -25,6 +35,10 @@ public class RemindFragment extends Fragment implements View.OnClickListener{
     private RemindAdapter recordAdapter;
     private RecyclerView recyclerView;
     private Button remindButtonAdd;
+
+    private MySQLiteOpenHelper dbHelper = null;
+
+    private remind.AddDialog addDialog;
 
     /**
      * Called to have the fragment instantiate its user interface view.
@@ -69,27 +83,16 @@ public class RemindFragment extends Fragment implements View.OnClickListener{
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        Log.d(TAG, "onActivityCreated: RemindFragment ok here 1");
 
-        /**
-         * 这一段代码用来初始化RecycleView的显示信息
-         * 主要修改第一行的 initInformation() 函数
-         */
-        initRecordList();
-        recyclerView = (RecyclerView) getActivity().findViewById(R.id.remindRecyclerView);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
-        recyclerView.setLayoutManager(layoutManager);
-        recordAdapter = new RemindAdapter(remindList);
-        recyclerView.setAdapter(recordAdapter);
+        refreshShow();
+
+        Log.d(TAG, "onActivityCreated: RemindFragment ok here 2");
 
         remindButtonAdd = (Button) getActivity().findViewById(R.id.remindButtonAdd);
         remindButtonAdd.setOnClickListener(this);
     }
 
-
-
-    /**
-     * 按钮点击事件
-     */
     /**
      * Called when a view has been clicked.
      *
@@ -99,34 +102,71 @@ public class RemindFragment extends Fragment implements View.OnClickListener{
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.remindButtonAdd:
-
+                showEditDialog(getView());
             default:
                 break;
         }
     }
 
-    /**
-     * initInformation() 函数
-     * 用来初始化 RecycleView 显示的数据
-     * 这里需要从数据库中得到
-     */
-    private void initRecordList() {
-        String time;
-        String event;
-        String finished;
-        for(int i = 0; i < 1; i ++){
-            time = "2019年1月1日";
-            event = "给父母拜年";
-            finished = "未完成";
-            remindList.add(new Remind(time, event, finished));
-            time = "2018年12月24日";
-            event = "考研第一天，加油";
-            finished = "未完成";
-            remindList.add(new Remind(time, event, finished));
-            time = "2018年9月1日";
-            event = "大四开始了，写新学期计划";
-            finished = "未完成";
-            remindList.add(new Remind(time, event, finished));
-        }
+    private void refreshShow(){
+        refreshData();
+        Log.d(TAG, "onActivityCreated: RemindFragment ok here 3");
+        recyclerView = (RecyclerView) getActivity().findViewById(R.id.remindRecyclerView);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(layoutManager);
+        recordAdapter = new RemindAdapter(remindList);
+
+        Log.d(TAG, "onActivityCreated: RemindFragment ok here 5");
+
+        recyclerView.setAdapter(recordAdapter);
     }
+
+    private void refreshData(){
+        remindList.clear();
+        String[] columns = new String[] {"date", "text"};
+        String orderby="date desc";
+        Cursor cursor =dbHelper.getWritableDatabase().query("tb_notes",columns,null,
+                null,null,null,null,null);
+        if(cursor.moveToFirst()){
+            do{
+                Remind remind = new Remind();
+                remind.setRemindTime(cursor.getString(cursor.getColumnIndex("date")));
+                remind.setRemindEvent(cursor.getString(cursor.getColumnIndex("text")));
+                remindList.add(remind);
+            }while (cursor.moveToNext());
+        }
+        cursor.close();
+    }
+
+    private void showEditDialog(View view) {
+        addDialog = new remind.AddDialog(getActivity(), R.layout.add_dialog, onClickListener);
+        addDialog.show();
+    }
+
+    private void dbInsertData(ContentValues values, String tableName){
+        dbHelper.getWritableDatabase().insert(tableName,null,values);
+    }
+
+    private View.OnClickListener onClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()) {
+                case R.id.addButtonOkAAA:
+
+                    String event = addDialog.addRemindTextEvent.getText().toString().trim();
+                    String time = addDialog.addRemindTextTime.getText().toString().trim();
+                    String info = addDialog.addRemindAdditionInfo.getText().toString().trim();
+
+                    ContentValues values=new ContentValues();
+                    values.put("date", time);
+                    values.put("text", event);
+                    dbInsertData(values, "tb_notes");
+
+                    Toast.makeText(getContext(), "Add Success", Toast.LENGTH_SHORT).show();
+                    refreshShow();
+                    addDialog.dismiss();
+                    break;
+            }
+        }
+    };
 }

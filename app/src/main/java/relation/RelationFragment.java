@@ -1,5 +1,6 @@
 package relation;
 
+import addpeople.AddDialog;
 import sidebar.*;
 import sqlHelper.MySQLiteOpenHelper;
 
@@ -22,7 +23,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.ljw14.tencentadvance.AddActivity;
 import com.example.ljw14.tencentadvance.InfoMe;
 import com.example.ljw14.tencentadvance.R;
 
@@ -47,6 +47,7 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
 
     private MySQLiteOpenHelper dbHelper = null;
 
+    private AddDialog addDialog;
 
     /**
      * 根据拼音来排列RecyclerView里面的数据类
@@ -105,8 +106,7 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
 
 
         dbHelper = new MySQLiteOpenHelper(getContext());
-        tempInsertDates();
-
+        //tempInsertDates();
 
         initViews();
 
@@ -115,7 +115,7 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
     private void tempInsertDates(){
         ContentValues values=new ContentValues();
 
-        for(int i=0; i<5; i++) {
+        for(int i=0; i<1; i++) {
             values.clear();
             values.put("username", "汪昱行");
             values.put("phonenumber", "18292026841");
@@ -169,16 +169,7 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
         });
 
         mRecyclerView = (RecyclerView) getActivity().findViewById(R.id.relationRecyclerView);
-        initRelation();
-        
-        // 根据a-z进行排序源数据
-        Collections.sort(SourceDateList, pinyinComparator);
-        //RecyclerView社置manager
-        manager = new LinearLayoutManager(getContext());
-        manager.setOrientation(LinearLayoutManager.VERTICAL);
-        mRecyclerView.setLayoutManager(manager);
-        adapter = new SortAdapter(getContext(), SourceDateList);
-        mRecyclerView.setAdapter(adapter);
+        showRecycleData();
 
         //item点击事件
         /*adapter.setOnItemClickListener(new SortAdapter.OnItemClickListener() {
@@ -190,7 +181,6 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
 
 
         mClearEditText = (ClearEditText) getActivity().findViewById(R.id.relationClearEditText);
-
         //根据输入框输入值的改变来过滤搜索
         mClearEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -209,14 +199,27 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
         });
     }
 
+    private void showRecycleData(){
+        initRelation();
+        // 根据a-z进行排序源数据
+        Collections.sort(SourceDateList, pinyinComparator);
+        //RecyclerView社置manager
+        manager = new LinearLayoutManager(getContext());
+        manager.setOrientation(LinearLayoutManager.VERTICAL);
+        mRecyclerView.setLayoutManager(manager);
+        adapter = new SortAdapter(getContext(), SourceDateList);
+        mRecyclerView.setAdapter(adapter);
+    }
+
     /**
      * 用于初始化显示的数据
      */
     private void initRelation()
     {
+        SourceDateList.clear();
         String[] columns = new String[] {"username", "phonenumber"};
-        Cursor cursor = dbHelper.getWritableDatabase().query("tb_mycontacts",columns,null,null,
-                null,null,null,null);
+        Cursor cursor = dbHelper.getWritableDatabase().query("tb_mycontacts",columns,
+                null,null,null,null,null,null);
         if(cursor.moveToFirst()){
             do{
                 SortModel sortModel = new SortModel();
@@ -240,10 +243,11 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
     public void onClick(View v) {
         switch(v.getId()){
             case R.id.relationAddButton:
-                Intent intentAdd = new Intent(getContext(), AddActivity.class);
-                intentAdd.putExtra("Title", "新建联系人");
-                intentAdd.putExtra("Flag", 3);
-                startActivity(intentAdd);
+//                Intent intentAdd = new Intent(getContext(), AddActivity.class);
+//                intentAdd.putExtra("Title", "新建联系人");
+//                intentAdd.putExtra("Flag", 3);
+//                startActivity(intentAdd);
+                showEditDialog(getView());
                 break;
             case R.id.relationMeButton:
                 Intent intentMe = new Intent(getContext(), InfoMe.class);
@@ -303,5 +307,32 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
         Collections.sort(filterDateList, pinyinComparator);
         adapter.updateList(filterDateList);
     }
+    private void showEditDialog(View view) {
+        addDialog = new AddDialog(getActivity(), R.layout.add_dialog, onClickListener);
+        addDialog.show();
+    }
+    private View.OnClickListener onClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()) {
+                case R.id.addButtonOkAAA:
 
+                    String name = addDialog.addTextName.getText().toString().trim();
+                    String telephone = addDialog.addTextTelephone.getText().toString().trim();
+                    String info = addDialog.addAdditionInfo.getText().toString().trim();
+
+                    ContentValues values=new ContentValues();
+                    values.put("username", name);
+                    values.put("phonenumber", telephone);
+                    dbInsertData(values, "tb_mycontacts");
+
+                    Toast.makeText(getContext(), "Add Success", Toast.LENGTH_SHORT).show();
+
+                    showRecycleData();
+
+                    addDialog.dismiss();
+                    break;
+            }
+        }
+    };
 }

@@ -14,8 +14,13 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import addpeople.AddDialog;
 import callrecord.CallRecordFragment;
@@ -32,10 +37,49 @@ import remind.RemindFragment;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
+    private Map<String, String> place = new HashMap<String, String>();
+
+    private void resolve(String src){
+        String pool[] = src.split(",");
+        String num = pool[1];
+        String toplace = pool[2] + pool[3] + "," + pool[4];
+        place.put(num, toplace);
+    }
+
+    private void placeInitiate(){
+        String file = new String("mobile.txt");
+        InputStream is = null;
+        try{
+            is = getAssets().open(file);
+            InputStreamReader isr = new InputStreamReader(is);
+            BufferedReader br = new BufferedReader(isr);
+            String now = null;
+            while((now = br.readLine()) != null){
+                resolve(now);
+            }
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 归属地查询，输入一个手机号，返回手机号归属地，格式："省+市+运营商"，如：陕西省西安市，中国移动
+     *
+     * */
+    private String getPlace(String phoneNumber){
+        String tar = phoneNumber.substring(0, 7);
+        return new String(place.get(tar));
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        /**
+         * 从assets里初始化归属地信息
+         * */
+        placeInitiate();
 
         /**
          * 这一段代码用来影藏android自带的Title

@@ -83,11 +83,9 @@ public class RemindFragment extends Fragment implements View.OnClickListener{
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        Log.d(TAG, "onActivityCreated: RemindFragment ok here 1");
+        dbHelper = new MySQLiteOpenHelper(getContext());
 
         refreshShow();
-
-        Log.d(TAG, "onActivityCreated: RemindFragment ok here 2");
 
         remindButtonAdd = (Button) getActivity().findViewById(R.id.remindButtonAdd);
         remindButtonAdd.setOnClickListener(this);
@@ -151,22 +149,32 @@ public class RemindFragment extends Fragment implements View.OnClickListener{
         @Override
         public void onClick(View v) {
             switch (v.getId()) {
-                case R.id.addButtonOkAAA:
+                case R.id.addRemindButtonOk:
 
-                    String event = addDialog.addRemindTextEvent.getText().toString().trim();
-                    String time = addDialog.addRemindTextTime.getText().toString().trim();
-                    String info = addDialog.addRemindAdditionInfo.getText().toString().trim();
+                    String event = addDialog.addRemindTextEvent.getText().toString();
+                    String time = addDialog.addRemindTextTime.getText().toString();
+                    String info = addDialog.addRemindAdditionInfo.getText().toString();
 
                     ContentValues values=new ContentValues();
                     values.put("date", time);
                     values.put("text", event);
                     dbInsertData(values, "tb_notes");
 
-                    Toast.makeText(getContext(), "Add Success", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Adding  Success", Toast.LENGTH_SHORT).show();
                     refreshShow();
                     addDialog.dismiss();
                     break;
             }
         }
     };
+
+    private void tempInsertDates(){
+        ContentValues values=new ContentValues();
+        for(int i=0; i<5; i++) {
+            values.clear();
+            values.put("date", "2018年6月20日");
+            values.put("text", "答辩");
+            dbInsertData(values, "tb_notes");
+        }
+    }
 }

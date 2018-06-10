@@ -15,6 +15,8 @@ import com.example.ljw14.tencentadvance.PersonActivity;
 import com.example.ljw14.tencentadvance.R;
 import com.example.ljw14.tencentadvance.RecordDetail;
 
+import org.w3c.dom.Text;
+
 import java.util.List;
 
 
@@ -28,12 +30,18 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.ViewHolder
         TextView recordName;
         TextView recordTelephone;
         TextView recordStartTime;
+        TextView recordType;
+        TextView recordDurationTime;
+        TextView recordLocation;
         public ViewHolder(View view){
             super(view);
             recordView = view;
             recordName = (TextView) view.findViewById(R.id.recordName);
             recordTelephone = (TextView) view.findViewById(R.id.recordTelephone);
             recordStartTime = (TextView) view.findViewById(R.id.recordStartTime);
+            recordType = (TextView) view.findViewById(R.id.recordType);
+            recordDurationTime = (TextView) view.findViewById(R.id.recordDurationTime);
+            recordLocation = (TextView) view.findViewById(R.id.recordLocation);
         }
     }
 
@@ -76,12 +84,12 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.ViewHolder
             public void onClick(View v) {
                 int position = holder.getAdapterPosition();
                 Record record = mRecordList.get(position);
-                Toast.makeText(v.getContext(), "you clicked" + record.getName()
+                Toast.makeText(v.getContext(), "you clicked" + record.getDisplayName()
                         , Toast.LENGTH_SHORT).show();
-                String name = record.getName();
-                String telephone = record.getTelephone();
-                String startTime = record.getTimeStart();
-                String endTime = record.getTimeEnd();
+                String name = record.getDisplayName();
+                String telephone = record.getPhone();
+                String startTime = record.getDate();
+                String endTime = record.getType();
                 Intent intent = new Intent(v.getContext(), RecordDetail.class);
                 intent.putExtra("peopleName", name);
                 intent.putExtra("peopleTelephone", telephone);
@@ -115,9 +123,12 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.ViewHolder
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Record record = mRecordList.get(position);
-        holder.recordName.setText(record.getName());
-        holder.recordStartTime.setText(record.getTimeStart());
-        holder.recordTelephone.setText(record.getTelephone());
+        holder.recordName.setText(record.getDisplayName());
+        holder.recordStartTime.setText(record.getDate());
+        holder.recordTelephone.setText(record.getPhone());
+        holder.recordType.setText(record.getType());
+        holder.recordDurationTime.setText(record.getDurationTime());
+        holder.recordLocation.setText(record.getLocation());
     }
 
     /**

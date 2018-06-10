@@ -47,8 +47,8 @@ public class PersonActivity extends AppCompatActivity implements View.OnClickLis
          * 然后根据不同的使用情况，初始化当前活动的初始数据
          */
         Intent intent = getIntent();
-        name = intent.getStringExtra("peopleName");
-        telephone = intent.getStringExtra("peopleTelephone");
+        name = intent.getStringExtra("Name");
+        telephone = intent.getStringExtra("Telephone");
         TextView textViewPersonName = (TextView) findViewById(R.id.personName);
         textViewPersonName.setText(name);
         TextView textViewPersonTel = (TextView) findViewById(R.id.personTelephone);

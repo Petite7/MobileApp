@@ -1,48 +1,57 @@
 package callrecord;
 
 public class Record {
-    private String name;
-    private String telephone;
-    private boolean talked;
-    private String timeStart;
-    private String timeEnd;
+    private String displayName;
+    private String phone;
+    private String date;
+    private String type;
+    private String durationTime;
+    private String location;
 
-    public Record(String name, String telephone, String start, String end, boolean talked){
-        this.name = name;
-        this.telephone = telephone;
-        this.timeStart = start;
-        this.timeEnd = end;
-        this.talked = talked;
+    public Record(){
+        this.displayName = null;
+        this.phone = null;
+        this.type = null;
+        this.date = null;
+        this.durationTime = null;
+        this.location = null;
     }
 
-    public String getTelephone() {
-        return telephone;
+    public void setDurationTime(String durationTime) {
+        this.durationTime = durationTime;
     }
-    public String getName() {
-        return name;
+    public void setLocation(String location) {
+        this.location = location;
     }
-    public String getTimeEnd() {
-        return timeEnd;
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
-    public String getTimeStart() {
-        return timeStart;
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
-    public boolean getTalked() {
-        return talked;
+    public void setDate(String date) {
+        this.date = date;
     }
-    public void setTelephone(String telephone) {
-        this.telephone = telephone;
+    public void setType(String type) {
+        this.type = type;
     }
-    public void setName(String name) {
-        this.name = name;
+
+    public String getDurationTime() {
+        return durationTime;
     }
-    public void setTimeEnd(String timeEnd) {
-        this.timeEnd = timeEnd;
+    public String getDisplayName() {
+        return displayName;
     }
-    public void setTimeStart(String timeStart) {
-        this.timeStart = timeStart;
+    public String getDate() {
+        return date;
     }
-    public void setTalked(boolean talked){
-        this.talked = talked;
+    public String getType() {
+        return type;
+    }
+    public String getLocation() {
+        return location;
+    }
+    public String getPhone() {
+        return phone;
     }
 }

@@ -3,24 +3,48 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal">
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/recordName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="姓名"
         android:textSize="15dp"/>
 
     <TextView
         android:id="@+id/recordTelephone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="电话"
         android:textSize="15dp"/>
 
     <TextView
         android:id="@+id/recordStartTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="开始时间"
+        android:textSize="15dp"/>
+
+    <TextView
+        android:id="@+id/recordType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="种类"
+        android:textSize="15dp"/>
+
+    <TextView
+        android:id="@+id/recordDurationTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="时长"
+        android:textSize="15dp"/>
+
+    <TextView
+        android:id="@+id/recordLocation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="归属地"
         android:textSize="15dp"/>
 
 </LinearLayout>

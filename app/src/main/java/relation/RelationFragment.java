@@ -3,6 +3,7 @@ package relation;
 import addpeople.AddDialog;
 import sidebar.*;
 import sqlHelper.MySQLiteOpenHelper;
+import sqlHelper.SqlHelper;
 
 import android.content.ContentValues;
 import android.content.Intent;
@@ -16,6 +17,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,11 +26,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.ljw14.tencentadvance.InfoMe;
+import com.example.ljw14.tencentadvance.PersonActivity;
 import com.example.ljw14.tencentadvance.R;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static android.content.ContentValues.TAG;
 
 
 /**
@@ -36,17 +41,17 @@ import java.util.List;
  */
 public class RelationFragment extends Fragment implements View.OnClickListener{
 
+    private final String[] relationTable = {"username", "phonenumber"};
+    private final String[] noteTable = {"date", "text"};
+
     private RecyclerView mRecyclerView;
     private SideBar sideBar;
     private TextView dialog;
     private SortAdapter adapter;
     private ClearEditText mClearEditText;
     private LinearLayoutManager manager;
-
     private List<SortModel> SourceDateList = new ArrayList<>();
-
-    private MySQLiteOpenHelper dbHelper = null;
-
+    private SqlHelper sqlHelper = null;
     private AddDialog addDialog;
 
     /**
@@ -94,9 +99,7 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        /**
-         * 绑定按钮点击事件，事件分别定义在下面的 Onclick 函数中
-         */
+
         Button buttonAdd = (Button) getActivity().findViewById(R.id.relationAddButton);
         Button buttonMe = (Button) getActivity().findViewById(R.id.relationMeButton);
         Button buttonEdit = (Button) getActivity().findViewById(R.id.relationEditButton);
@@ -104,55 +107,30 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
         buttonMe.setOnClickListener(this);
         buttonEdit.setOnClickListener(this);
 
+        sqlHelper = new SqlHelper(getContext());
 
-        dbHelper = new MySQLiteOpenHelper(getContext());
-        //tempInsertDates();
-
-        initViews();
-
-    }
-
-    private void tempInsertDates(){
-        ContentValues values=new ContentValues();
-
-        for(int i=0; i<1; i++) {
-            values.clear();
-            values.put("username", "汪昱行");
-            values.put("phonenumber", "18292026841");
-            dbInsertData(values, "tb_mycontacts");
-
-            values.clear();
-            values.put("username", "陈衍琛");
-            values.put("phonenumber", "123456789");
-            dbInsertData(values, "tb_mycontacts");
-
-            values.clear();
-            values.put("username", "谢泽帆");
-            values.put("phonenumber", "123456789");
-            dbInsertData(values, "tb_mycontacts");
-
-            values.clear();
-            values.put("username", "陈宁");
-            values.put("phonenumber", "123456789");
-            dbInsertData(values, "tb_mycontacts");
-
-            values.clear();
-            values.put("username", "rng");
-            values.put("phonenumber", "123456789");
-            dbInsertData(values, "tb_mycontacts");
-        }
-    }
-
-    private void dbInsertData(ContentValues values, String tableName){
-        dbHelper.getWritableDatabase().insert(tableName,null,values);
-    }
-
-    private void initViews() {
         pinyinComparator = new PinyinComparator();
 
         sideBar = (SideBar) getActivity().findViewById(R.id.relationSideBar);
         dialog = (TextView) getActivity().findViewById(R.id.relationDialog);
         sideBar.setTextView(dialog);
+
+        mRecyclerView = (RecyclerView) getActivity().findViewById(R.id.relationRecyclerView);
+
+        initViews();//初始化显示
+    }
+
+    //通过联系人姓名，从数据库查询数据
+    private ContentValues getAllInfoWithName(String tableName, String Name){
+        String items[] = new String[]{"username"};
+        String args[] = new String[]{Name};
+        return sqlHelper.getAllInfoWithCondition(tableName, items, args);
+    }
+
+
+    //用于初始化这个界面
+    private void initViews() {
+        showRecycleData();
 
         //设置右侧SideBar触摸监听
         sideBar.setOnTouchingLetterChangedListener(new SideBar.OnTouchingLetterChangedListener() {
@@ -168,17 +146,22 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
             }
         });
 
-        mRecyclerView = (RecyclerView) getActivity().findViewById(R.id.relationRecyclerView);
-        showRecycleData();
-
-        //item点击事件
-        /*adapter.setOnItemClickListener(new SortAdapter.OnItemClickListener() {
+        adapter.setOnItemClickListener(new SortAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                Toast.makeText(MainActivity.this, ((SortModel)adapter.getItem(position)).getName(),Toast.LENGTH_SHORT).show();
-            }
-        });*/
+                Toast.makeText(getContext(), ((SortModel)adapter.getItem(position)).getName(),
+                        Toast.LENGTH_SHORT).show();
+                ContentValues contentValues = getAllInfoWithName("tb_mycontacts",
+                        ((SortModel)adapter.getItem(position)).getName());//通过姓名得到这个人的所有信息
+                Intent intentPerson = new Intent(getContext(), PersonActivity.class);
+                intentPerson.putExtra("Name", (String) contentValues.get("username"));
+                intentPerson.putExtra("Telephone", (String) contentValues.get("phonenumber"));
 
+                Log.d(TAG, "onItemClick: " + (String) contentValues.get("phonenumber"));
+
+                startActivity(intentPerson);
+            }
+        });
 
         mClearEditText = (ClearEditText) getActivity().findViewById(R.id.relationClearEditText);
         //根据输入框输入值的改变来过滤搜索
@@ -188,10 +171,8 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
                 //当输入框里面的值为空，更新为原来的列表，否则为过滤数据列表
                 filterData(s.toString());
             }
-
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count,
-                                          int after) {
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
             @Override
             public void afterTextChanged(Editable s) {
@@ -199,41 +180,6 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
         });
     }
 
-    private void showRecycleData(){
-        initRelation();
-        // 根据a-z进行排序源数据
-        Collections.sort(SourceDateList, pinyinComparator);
-        //RecyclerView社置manager
-        manager = new LinearLayoutManager(getContext());
-        manager.setOrientation(LinearLayoutManager.VERTICAL);
-        mRecyclerView.setLayoutManager(manager);
-        adapter = new SortAdapter(getContext(), SourceDateList);
-        mRecyclerView.setAdapter(adapter);
-    }
-
-    /**
-     * 用于初始化显示的数据
-     */
-    private void initRelation()
-    {
-        SourceDateList.clear();
-        String[] columns = new String[] {"username", "phonenumber"};
-        Cursor cursor = dbHelper.getWritableDatabase().query("tb_mycontacts",columns,
-                null,null,null,null,null,null);
-        if(cursor.moveToFirst()){
-            do{
-                SortModel sortModel = new SortModel();
-                sortModel.setName(cursor.getString(cursor.getColumnIndex("username")));
-                sortModel.setTelephone(cursor.getString(cursor.getColumnIndex("phonenumber")));
-                SourceDateList.add(sortModel);
-            }while (cursor.moveToNext());
-        }
-        cursor.close();
-    }
-
-    /**
-     * 按钮点击事件
-     */
     /**
      * Called when a view has been clicked.
      *
@@ -253,7 +199,119 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
                 Intent intentMe = new Intent(getContext(), InfoMe.class);
                 startActivity(intentMe);
                 break;
+        }
+    }
 
+    //根据填充的信息显示，每次插入后重新显示
+    private void showRecycleData(){
+        initRelation();
+        // 根据a-z进行排序源数据
+        Collections.sort(SourceDateList, pinyinComparator);
+        //RecyclerView社置manager
+        manager = new LinearLayoutManager(getContext());
+        manager.setOrientation(LinearLayoutManager.VERTICAL);
+        mRecyclerView.setLayoutManager(manager);
+        adapter = new SortAdapter(getContext(), SourceDateList);
+        mRecyclerView.setAdapter(adapter);
+    }
+
+    //用于初始化显示的数据
+    private void initRelation() {
+        SourceDateList.clear();
+        List<ContentValues> dataList = sqlHelper.traverse("tb_mycontacts");
+        for(int i=0; i<dataList.size(); i++){
+            ContentValues values = dataList.get(i);
+            SortModel sortModel = new SortModel();
+            sortModel.setName((String) values.get("username"));
+            sortModel.setTelephone((String) values.get("phonenumber"));
+            SourceDateList.add(sortModel);
+        }
+    }
+    /**
+     * 根据输入框中的值来过滤数据并更新RecyclerView
+     *
+     * @param filterStr
+     */
+    //用于填充联系人的首字母
+    private void filterData(String filterStr) {
+        List<SortModel> filterDateList = new ArrayList<>();
+
+        if (TextUtils.isEmpty(filterStr)) {
+            filterDateList = SourceDateList;
+        } else {
+            filterDateList.clear();
+            for (SortModel sortModel : SourceDateList) {
+                String name = sortModel.getName();
+                if (name.indexOf(filterStr.toString()) != -1 ||
+                        PinyinUtils.getFirstSpell(name).startsWith(filterStr.toString())
+                        //不区分大小写
+                        || PinyinUtils.getFirstSpell(name).toLowerCase().startsWith(
+                                filterStr.toString())
+                        || PinyinUtils.getFirstSpell(name).toUpperCase().startsWith(
+                                filterStr.toString())
+                        ) {
+                    filterDateList.add(sortModel);
+                }
+            }
+        }
+        // 根据a-z进行排序
+        Collections.sort(filterDateList, pinyinComparator);
+        adapter.updateList(filterDateList);
+    }
+
+
+    //点击添加联系人出现的Dialog
+    private void showEditDialog(View view) {
+        addDialog = new AddDialog(getActivity(), R.layout.add_dialog, onClickListener);
+        addDialog.show();
+    }
+    //给Dialog的完成按钮添加事件，插入添加的数据到数据库
+    private View.OnClickListener onClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()) {
+                case R.id.addButtonOkAAA:
+
+                    String name = addDialog.addTextName.getText().toString();
+                    String telephone = addDialog.addTextTelephone.getText().toString();
+                    String info = addDialog.addAdditionInfo.getText().toString();
+
+                    String[] args = new String[]{name, telephone};
+                    sqlHelper.insert("tb_mycontacts", args);
+
+                    Toast.makeText(getContext(), "Add Success", Toast.LENGTH_SHORT).show();
+
+                    showRecycleData();
+
+                    addDialog.dismiss();
+                    break;
+            }
+        }
+    };
+
+    //用于测试插入数据
+    private void tempInsertDates(){
+        String[] args = new String[2];
+        for(int i=0; i<1; i++) {
+            args[0] = "汪昱行";
+            args[1] = "18292026841";
+            sqlHelper.insert("tb_mycontacts", args);
+
+            args[0] = "陈衍琛";
+            args[1] = "123456789";
+            sqlHelper.insert("tb_mycontacts", args);
+
+            args[0] = "谢泽帆";
+            args[1] = "123456789";
+            sqlHelper.insert("tb_mycontacts", args);
+
+            args[0] = "陈宁";
+            args[1] = "123456789";
+            sqlHelper.insert("tb_mycontacts", args);
+
+            args[0] = "rng";
+            args[1] = "123456789";
+            sqlHelper.insert("tb_mycontacts", args);
         }
     }
     /**
@@ -277,62 +335,4 @@ public class RelationFragment extends Fragment implements View.OnClickListener{
             }
         }
     }
-
-    /**
-     * 根据输入框中的值来过滤数据并更新RecyclerView
-     *
-     * @param filterStr
-     */
-    private void filterData(String filterStr) {
-        List<SortModel> filterDateList = new ArrayList<>();
-
-        if (TextUtils.isEmpty(filterStr)) {
-            filterDateList = SourceDateList;
-        } else {
-            filterDateList.clear();
-            for (SortModel sortModel : SourceDateList) {
-                String name = sortModel.getName();
-                if (name.indexOf(filterStr.toString()) != -1 ||
-                        PinyinUtils.getFirstSpell(name).startsWith(filterStr.toString())
-                        //不区分大小写
-                        || PinyinUtils.getFirstSpell(name).toLowerCase().startsWith(filterStr.toString())
-                        || PinyinUtils.getFirstSpell(name).toUpperCase().startsWith(filterStr.toString())
-                        ) {
-                    filterDateList.add(sortModel);
-                }
-            }
-        }
-
-        // 根据a-z进行排序
-        Collections.sort(filterDateList, pinyinComparator);
-        adapter.updateList(filterDateList);
-    }
-    private void showEditDialog(View view) {
-        addDialog = new AddDialog(getActivity(), R.layout.add_dialog, onClickListener);
-        addDialog.show();
-    }
-    private View.OnClickListener onClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()) {
-                case R.id.addButtonOkAAA:
-
-                    String name = addDialog.addTextName.getText().toString().trim();
-                    String telephone = addDialog.addTextTelephone.getText().toString().trim();
-                    String info = addDialog.addAdditionInfo.getText().toString().trim();
-
-                    ContentValues values=new ContentValues();
-                    values.put("username", name);
-                    values.put("phonenumber", telephone);
-                    dbInsertData(values, "tb_mycontacts");
-
-                    Toast.makeText(getContext(), "Add Success", Toast.LENGTH_SHORT).show();
-
-                    showRecycleData();
-
-                    addDialog.dismiss();
-                    break;
-            }
-        }
-    };
 }

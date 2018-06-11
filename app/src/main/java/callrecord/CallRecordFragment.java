@@ -2,6 +2,7 @@ package callrecord;
 
 
 import android.Manifest;
+import android.content.ContentValues;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -40,6 +41,7 @@ import java.util.Random;
 
 import relation.People;
 import relation.PeopleAdapter;
+import sqlHelper.SqlHelper;
 
 import static android.content.ContentValues.TAG;
 
@@ -62,6 +64,8 @@ public class CallRecordFragment extends Fragment implements View.OnClickListener
     private List<Record> recordListMissMonth = new ArrayList<>();
     private RecordAdapter recordAdapter;
     private RecyclerView recyclerView;
+
+    private SqlHelper sqlHelper = null;
 
     /**
      * Called to have the fragment instantiate its user interface view.
@@ -117,6 +121,7 @@ public class CallRecordFragment extends Fragment implements View.OnClickListener
         buttonWeek.setOnClickListener(this);
         buttonMonth.setOnClickListener(this);
 
+        sqlHelper = new SqlHelper(getContext());
 
         placeInitiate();
         //ListView contactsView  = (ListView) findViewById(R.id.contacts_view);
@@ -234,6 +239,14 @@ public class CallRecordFragment extends Fragment implements View.OnClickListener
                         displayName = "未知号码";
                     }
                     String number = cursor.getString(cursor.getColumnIndex(CallLog.Calls.NUMBER));
+
+                    Log.d(TAG, "readContacts: OK HERE");
+                    ContentValues tmp = getAllInfoWithPhone("tb_mycontacts", number);
+                    if(tmp != null)
+                        displayName = tmp.get("username").toString();
+                    Log.d(TAG, "readContacts: OK HERE" + tmp + "--tmp--");
+                    Log.d(TAG, "readContacts: OK HERE" + displayName + "--name--");
+
                     String callLogDate = cursor.getString(cursor.getColumnIndex(CallLog.Calls.DATE));
                     String time;
                     String type;
@@ -288,6 +301,15 @@ public class CallRecordFragment extends Fragment implements View.OnClickListener
                 cursor.close();
             }
         }
+    }
+
+    //通过联系人姓名，从数据库查询数据
+    private ContentValues getAllInfoWithPhone(String tableName, String Phone){
+        String items[] = new String[]{"phonenumber"};
+        String args[] = new String[]{Phone};
+        ContentValues contentValues = sqlHelper.getAllInfoWithCondition(tableName, items, args);
+        //Log.d(TAG, "getAllInfoWithPhone: OK HERE" + contentValues.get("username").toString());
+        return contentValues;
     }
 
     /**

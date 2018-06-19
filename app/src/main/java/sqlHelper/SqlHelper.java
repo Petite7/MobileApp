@@ -75,9 +75,6 @@ public class SqlHelper {
         String[] columns = new String[10];//暂时最多10个选项
         String selection = new String();
 
-        for(int i=0; i<items.length && i <len; i++)
-            Log.d(TAG, "getAllInfoWithCondition: " + items[i]);
-
         if(tableName == "tb_mycontacts"){
             columns = relationTable;
             len = relationTable.length;
@@ -94,10 +91,14 @@ public class SqlHelper {
         }
         Cursor cursor =dbHelper.getWritableDatabase().query(tableName, columns, selection,
                 args,null,null,null,null);
+        Log.d(TAG, "getAllInfoWithCondition: KO " + cursor);
+        if(cursor == null)
+            return null;
         cursor.moveToFirst();
         ContentValues values = new ContentValues();
-        for (int i = 0; i < columns.length; i++) {
+        for (int i = 0; i < columns.length && i < len; i++) {
             values.put(columns[i], cursor.getString(cursor.getColumnIndex(columns[i])));
+            Log.d(TAG, "getAllInfoWithCondition: KO " + cursor.getString(cursor.getColumnIndex(columns[i])));
         }
         cursor.close();
         return values;

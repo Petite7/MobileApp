@@ -34,7 +34,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -144,6 +146,17 @@ public class CallRecordFragment extends Fragment implements View.OnClickListener
         recyclerView.setAdapter(recordAdapter);
     }
 
+    private String findNameByPhone(String phone) {
+        Dictionary<String, String> phoneName = new Hashtable<String, String>();
+        List<ContentValues> dataList = sqlHelper.traverse("tb_mycontacts");
+        for(int i=0; i<dataList.size(); i++){
+            ContentValues values = dataList.get(i);
+            phoneName.put((String) values.get("phonenumber"), (String) values.get("username"));
+        }
+        return phoneName.get(phone);
+    }
+
+
     /**
      * Called when a view has been clicked.
      *
@@ -235,17 +248,23 @@ public class CallRecordFragment extends Fragment implements View.OnClickListener
             {
                 while(cursor.moveToNext()){
                     String displayName = cursor.getString(cursor.getColumnIndex(CallLog.Calls.CACHED_NAME));
-                    if (displayName==null){
-                        displayName = "未知号码";
-                    }
                     String number = cursor.getString(cursor.getColumnIndex(CallLog.Calls.NUMBER));
 
-                    Log.d(TAG, "readContacts: OK HERE");
-                    ContentValues tmp = getAllInfoWithPhone("tb_mycontacts", number);
-                    if(tmp != null)
-                        displayName = tmp.get("username").toString();
-                    Log.d(TAG, "readContacts: OK HERE" + tmp + "--tmp--");
-                    Log.d(TAG, "readContacts: OK HERE" + displayName + "--name--");
+                    Log.d(TAG, "readContacts: OK displayName1 = " + displayName);
+
+//                    ContentValues tmp = getAllInfoWithPhone("tb_mycontacts", number);
+//                    if(tmp != null) {
+//                        displayName = tmp.get("username").toString();
+//                        Log.d(TAG, "readContacts: OK tmp not null " + displayName);
+//                    }
+//                    else {
+//                        displayName = "未知号码";
+//                        Log.d(TAG, "readContacts: OK tmp null " + displayName);
+//                    }
+                    displayName = findNameByPhone(number);
+                    if(displayName == null)
+                        displayName = "\t未知号码";
+                    Log.d(TAG, "readContacts: OK displayName2 = " + displayName);
 
                     String callLogDate = cursor.getString(cursor.getColumnIndex(CallLog.Calls.DATE));
                     String time;
@@ -308,7 +327,11 @@ public class CallRecordFragment extends Fragment implements View.OnClickListener
         String items[] = new String[]{"phonenumber"};
         String args[] = new String[]{Phone};
         ContentValues contentValues = sqlHelper.getAllInfoWithCondition(tableName, items, args);
-        //Log.d(TAG, "getAllInfoWithPhone: OK HERE" + contentValues.get("username").toString());
+        if(contentValues != null)
+            Log.d(TAG, "getAllInfoWithPhone: OK " + contentValues.get("username").toString() +
+                contentValues.get("phonenumber").toString());
+        else
+            Log.d(TAG, "getAllInfoWithPhone: OK null");
         return contentValues;
     }
 
